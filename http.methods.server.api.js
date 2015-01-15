@@ -561,8 +561,8 @@ WebApp.connectHandlers.use(function(req, res, next) {
           return;
         }
 
-        // If OK / 200 then Return the result
-        if (self.statusCode === 200) {
+        // If OK / 200 / 206 then Return the result
+        if ((self.statusCode === 200) || (self.statusCode === 206)) {
           // Set headers
           _.each(self.headers, function(value, key) {
             // If value is defined then set the header, this allows for unsetting
@@ -584,13 +584,15 @@ WebApp.connectHandlers.use(function(req, res, next) {
             self.headers['Content-Length'] = resultBuffer.length;
           }
 
+          //Set status code
+          res.writeHead(self.statusCode);
+
           // Check if we allow and have a stream and the user is read streaming
           // Then
           var streamsWaiting = 1;
 
           // We wait until the user has finished reading
           if (self.isReadStreaming) {
-            // console.log('Read stream');
             req.on('end', function() {
               streamsWaiting--;
               // If no streams are waiting
